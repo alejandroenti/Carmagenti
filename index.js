@@ -30,7 +30,8 @@ wsServer.on('connection', (conn) => {
         p1Conn = conn;
         p1Conn.send('{"playerNum": 1}');
         p1Conn.on('message', (data) => {
-            p2Conn.send(data);
+            //p2Conn.send(data);
+            console.log(data.toString());
         });
     }
     else if (p2Conn === undefined) {

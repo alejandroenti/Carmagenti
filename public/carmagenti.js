@@ -1,7 +1,7 @@
 const socket = new WebSocket("ws://10.40.3.34:8080");
 
 socket.addEventListener('open', (event) => {
-    socket.send("Connecting!");
+    
 });
 
 socket.addEventListener('message', (event) => {
@@ -24,12 +24,12 @@ const CAR_SPEED = 5;
 const CAR_ROTATION = 3;
 
 // Cars
-let car1;
-let car2;
+let player1;
+let player2;
 
 // Car Angles
-let car1Angle = 0;
-let car2Angle = 0;
+let player1Angle = 0;
+let player2Angle = 0;
 
 // Input Keys
 let cursors;
@@ -42,8 +42,8 @@ function preload () {
 }
 
 function create () {
-    car1 = this.add.image(config.width / 4, config.height / 2, "car1-img");
-    car2 = this.add.image(3 * config.width / 4, config.height / 2, "car2-img");
+    player1 = this.add.image(config.width / 4, config.height / 2, "car1-img");
+    player2 = this.add.image(3 * config.width / 4, config.height / 2, "car2-img");
 
     cursors = this.input.keyboard.createCursorKeys();
 }
@@ -52,16 +52,25 @@ function update () {
 
     // Car 2 Input Update
     if (cursors.up.isDown) {
-        car2.y -= CAR_SPEED * Math.cos(car2Angle * Math.PI / 180);
-        car2.x += CAR_SPEED * Math.sin(car2Angle * Math.PI / 180);
+        player1.y -= CAR_SPEED * Math.cos(player1Angle * Math.PI / 180);
+        player1.x += CAR_SPEED * Math.sin(player1Angle * Math.PI / 180);
     }
 
     if (cursors.left.isDown) {
-        car2Angle -= CAR_ROTATION
-        car2.rotation = car2Angle * Math.PI / 180;
+        player1Angle -= CAR_ROTATION
+        player1.rotation = player1Angle * Math.PI / 180;
     }
     else if (cursors.right.isDown) {
-        car2Angle += CAR_ROTATION
-        car2.rotation = car2Angle * Math.PI / 180;
+        player1Angle += CAR_ROTATION
     }
+    
+    player1.rotation = player1Angle * Math.PI / 180;
+
+    let playerData = {
+        x: player1.x,
+        y: player2.y,
+        r: player1.rotation
+    }
+
+    socket.send(JSON.stringify(playerData))
 }
