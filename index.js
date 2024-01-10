@@ -1,7 +1,7 @@
-var static = require('node-static');
+let static = require('node-static');
 
 // El servidor buscar recursos dentro de nuestra carpeta './public'
-var file = new static.Server('./public');
+let file = new static.Server('./public');
  
 require('http').createServer(function (request, response) {
     request.addListener('end', function () {
