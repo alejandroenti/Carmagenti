@@ -1,11 +1,11 @@
 const socket = new WebSocket("ws://10.40.3.34:8080");
 
 socket.addEventListener('open', (event) => {
-    socket.send("Conectando!");
+    socket.send("Connecting!");
 });
 
 socket.addEventListener('message', (event) => {
-    console.log("[!] Mensaje del servidor: ", event.data);
+    console.log("[!] EVENT: Message from server - ", event.data);
 });
 
 const config = {
