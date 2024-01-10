@@ -1,3 +1,13 @@
+const socket = new WebSocket("ws://10.40.3.34:8080");
+
+socket.addEventListener('open', (event) => {
+    socket.send("Conectando!");
+});
+
+socket.addEventListener('message', (event) => {
+    console.log("[!] Mensaje del servidor: ", event.data);
+});
+
 const config = {
     type: Phaser.AUTO,
     width: 800,
