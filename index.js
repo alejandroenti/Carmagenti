@@ -2,6 +2,10 @@ let static = require('node-static');
 let http = require('http');
 let ws = require('ws');
 
+// Conexión de los usuarios
+let p1Conn;
+let p2Conn;
+
 // El servidor buscar recursos dentro de nuestra carpeta './public'
 let file = new static.Server('./public');
  
@@ -20,7 +24,24 @@ httpServer.listen(8080);
 // Configuramos las peticiones que deberemos escuchar mediante el servidor de Web Sockets
 wsServer.on('connection', (conn) => {
     console.log("[*] EVENT: Connection");
-    conn.on('message', (data) => {
+
+    // Asignamos la nueva conexión a uno de los jugadores y les enviamos qué usuario son
+    if (p1Conn === undefined) {
+        p1Conn = conn;
+        p1Conn.send('{"playerNum": 1');
+        p1Conn.on('message', (data) => {
+            p2Conn.send(data);
+        });
+    }
+    else if (p2Conn === undefined) {
+        p2Conn = conn;
+        p2Conn.send('{"playerNum": 2');
+        p2Conn.on('message', (data) => {
+            p1Conn.send(data);
+        });
+    }
+
+    /*conn.on('message', (data) => {
         console.log("[*] EVENT: Data recived - " + data.toString());
-    });
+    });*/
 });
