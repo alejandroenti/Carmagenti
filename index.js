@@ -11,4 +11,4 @@ let httpServer = http.createServer(function (request, response) {
     }).resume();
 }).listen(8080);
 
-let wsServer = ws.WebSocketServer({ httpServer });
+let wsServer = new ws.WebSocketServer({ server: httpServer });
