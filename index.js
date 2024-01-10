@@ -28,14 +28,14 @@ wsServer.on('connection', (conn) => {
     // Asignamos la nueva conexión a uno de los jugadores y les enviamos qué usuario son
     if (p1Conn === undefined) {
         p1Conn = conn;
-        p1Conn.send('{"playerNum": 1');
+        p1Conn.send('{"playerNum": 1}');
         p1Conn.on('message', (data) => {
             p2Conn.send(data);
         });
     }
     else if (p2Conn === undefined) {
         p2Conn = conn;
-        p2Conn.send('{"playerNum": 2');
+        p2Conn.send('{"playerNum": 2}');
         p2Conn.on('message', (data) => {
             p1Conn.send(data);
         });
