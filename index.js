@@ -21,6 +21,6 @@ httpServer.listen(8080);
 wsServer.on('connection', (conn) => {
     console.log("[*] EVENT: Connection");
     conn.on('message', (data) => {
-        console.log("[*] EVENT: Data recived - " + data);
+        console.log("[*] EVENT: Data recived - " + data.toString());
     });
 });
