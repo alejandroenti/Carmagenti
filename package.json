@@ -1,0 +1,22 @@
+{
+  "name": "carmagenti",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alejandroenti/Carmagenti.git"
+  },
+  "author": "Alejandro López",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alejandroenti/Carmagenti/issues"
+  },
+  "homepage": "https://github.com/alejandroenti/Carmagenti#readme",
+  "dependencies": {
+    "node-static": "^0.7.11"
+  }
+}
