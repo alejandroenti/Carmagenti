@@ -1,3 +1,5 @@
+let playerNum = 0;
+
 const socket = new WebSocket("ws://10.40.3.34:8080");
 
 socket.addEventListener('open', (event) => {
@@ -5,7 +7,13 @@ socket.addEventListener('open', (event) => {
 });
 
 socket.addEventListener('message', (event) => {
-    console.log("[!] EVENT: Message from server - ", event.data);
+    console.log("[*] EVENT: Message from server - ", event.data);
+    let data = JSON.parse(event.data);
+
+    if (data.playerNum != undefined) {
+        playerNum = data.playerNum;
+        console.log("[*] EVENT: Message from server - Player number " + playerNum);
+    }
 });
 
 const config = {
