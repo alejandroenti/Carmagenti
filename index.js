@@ -9,6 +9,8 @@ let httpServer = http.createServer(function (request, response) {
     request.addListener('end', function () {
         file.serve(request, response);
     }).resume();
-}).listen(8080);
+})
 
 let wsServer = new ws.WebSocketServer({ server: httpServer });
+
+httpServer.listen(8080);
