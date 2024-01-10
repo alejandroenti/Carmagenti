@@ -6,5 +6,38 @@
 </head>
 <body>
     <h1>CarmagENTI</h1>
+    <script>
+
+        const config = {
+            width: 800,
+            height: 600,
+            physics: {
+                default: 'arcade',
+                arcade: {
+                    debug: true
+                }
+            },
+            scene: {
+                preload: precarga,
+                create: crear,
+                update: actualiza
+            }
+        };
+
+        const game = new Phaser.Game(config);
+
+        function precarga () {
+        }
+
+        function crear () {
+        }
+        
+        function startGame () {
+        }
+
+        function actualiza () {
+        }
+
+    </script>
 </body>
 </html>
