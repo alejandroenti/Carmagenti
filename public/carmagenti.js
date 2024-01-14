@@ -1,9 +1,10 @@
 let playerNum = 0;
+let carRival;
 
-const socket = new WebSocket("ws://10.40.3.34:8080");
+const socket = new WebSocket("ws://192.168.1.35:8080");
 
 socket.addEventListener('open', (event) => {
-    
+
 });
 
 socket.addEventListener('message', (event) => {
@@ -13,6 +14,15 @@ socket.addEventListener('message', (event) => {
     if (data.playerNum != undefined) {
         playerNum = data.playerNum;
         console.log("[*] EVENT: Message from server - Player number " + playerNum);
+    }
+
+    else if (data.x != undefined) {
+        console.log(`[*] EVENT: Message from server - Car Rival data {${data.x}, ${data.y}, ${data.r}}`);
+        carRival = {
+            x: data.x,
+            y: data.y,
+            r: data.r
+        }
     }
 });
 
@@ -44,41 +54,53 @@ let cursors;
 
 const game = new Phaser.Game(config);
 
-function preload () {
+function preload() {
     this.load.image("car1-img", "assets/PNG/Cars/car_blue_small_1.png");
     this.load.image("car2-img", "assets/PNG/Cars/car_red_small_1.png");
 }
 
-function create () {
+function create() {
     player1 = this.add.image(config.width / 4, config.height / 2, "car1-img");
     player2 = this.add.image(3 * config.width / 4, config.height / 2, "car2-img");
 
     cursors = this.input.keyboard.createCursorKeys();
 }
 
-function update () {
+function update() {
 
-    // Car 2 Input Update
-    if (cursors.up.isDown) {
-        player1.y -= CAR_SPEED * Math.cos(player1Angle * Math.PI / 180);
-        player1.x += CAR_SPEED * Math.sin(player1Angle * Math.PI / 180);
-    }
+    // El player 1 es el que actualmente puede realizar inputs para mover el coche
+    if (playerNum === 1) {
+        // Car 1 Input Update
+        if (cursors.up.isDown) {
+            player1.y -= CAR_SPEED * Math.cos(player1Angle * Math.PI / 180);
+            player1.x += CAR_SPEED * Math.sin(player1Angle * Math.PI / 180);
+        }
 
-    if (cursors.left.isDown) {
-        player1Angle -= CAR_ROTATION
+        if (cursors.left.isDown) {
+            player1Angle -= CAR_ROTATION
+            player1.rotation = player1Angle * Math.PI / 180;
+        }
+        else if (cursors.right.isDown) {
+            player1Angle += CAR_ROTATION
+        }
+
         player1.rotation = player1Angle * Math.PI / 180;
-    }
-    else if (cursors.right.isDown) {
-        player1Angle += CAR_ROTATION
-    }
-    
-    player1.rotation = player1Angle * Math.PI / 180;
 
-    let playerData = {
-        x: player1.x,
-        y: player2.y,
-        r: player1.rotation
+        let playerData = {
+            x: player1.x,
+            y: player1.y,
+            r: player1.rotation
+        }
+
+        socket.send(JSON.stringify(playerData))
     }
 
-    socket.send(JSON.stringify(playerData))
+    // En caso de ser el player 2, deberemos actualizar el coche 1 mediante lo que nos llega del servidor
+    if (playerNum === 2) {
+        player1.x = carRival.x;
+        player1.y = carRival.y;
+        player1.rotation = carRival.r;
+    }
+
+
 }

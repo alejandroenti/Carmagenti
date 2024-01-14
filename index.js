@@ -8,7 +8,7 @@ let p2Conn;
 
 // El servidor buscar recursos dentro de nuestra carpeta './public'
 let file = new static.Server('./public');
- 
+
 let httpServer = http.createServer(function (request, response) {
     request.addListener('end', function () {
         file.serve(request, response);
@@ -30,8 +30,10 @@ wsServer.on('connection', (conn) => {
         p1Conn = conn;
         p1Conn.send('{"playerNum": 1}');
         p1Conn.on('message', (data) => {
-            //p2Conn.send(data);
-            console.log(data.toString());
+            if (p2Conn != undefined) {
+                p2Conn.send(data.toString());
+                console.log(data.toString());
+            }
         });
     }
     else if (p2Conn === undefined) {
@@ -41,8 +43,4 @@ wsServer.on('connection', (conn) => {
             p1Conn.send(data);
         });
     }
-
-    /*conn.on('message', (data) => {
-        console.log("[*] EVENT: Data recived - " + data.toString());
-    });*/
 });
