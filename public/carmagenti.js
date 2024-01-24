@@ -47,8 +47,8 @@ const config = {
 };
 
 // Car Speed (LINEAR AND ANGULAR)
-const CAR_SPEED = 5;
-const CAR_ROTATION = 3;
+const CAR_SPEED = 4;
+const CAR_ROTATION = 5;
 
 // Car Angles
 let player1Angle = 0;
@@ -57,16 +57,26 @@ let player2Angle = 0;
 // Input Keys
 let cursors;
 
+// Track background
+let bg;
+
 const game = new Phaser.Game(config);
 
 function preload() {
+    this.load.image("bg-img", "assets/PNG/Tracks/track.png");
     this.load.image("car1-img", "assets/PNG/Cars/car_blue_small_1.png");
     this.load.image("car2-img", "assets/PNG/Cars/car_red_small_1.png");
 }
 
 function create() {
+
+    bg = this.add.image(config.width / 2, config.height / 2, "bg-img");
+
     player1 = this.add.image(config.width / 4, config.height / 2, "car1-img");
     player2 = this.add.image(3 * config.width / 4, config.height / 2, "car2-img");
+
+    player1.setScale(0.5);
+    player2.setScale(0.5);
 
     cursors = this.input.keyboard.createCursorKeys();
 }

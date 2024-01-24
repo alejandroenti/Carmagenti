@@ -29,23 +29,23 @@ wsServer.on('connection', (conn) => {
     if (p1Conn === undefined) {
         p1Conn = conn;
         p1Conn.send('{"playerNum": 1}');
+        console.log("[*] EVENT: Connection - Player 1");
         p1Conn.on('message', (data) => {
             if (p2Conn == undefined) {
                 return;
             }
             p2Conn.send(data.toString());
-            console.log("[*] EVENT: Connection - Player 1");
         });
     }
     else if (p2Conn === undefined) {
         p2Conn = conn;
         p2Conn.send('{"playerNum": 2}');
+        console.log("[*] EVENT: Connection - Player 2");
         p2Conn.on('message', (data) => {
             if (p1Conn == undefined) {
                 return;
             }
             p1Conn.send(data.toString());
-            console.log("[*] EVENT: Connection - Player 2");
         });
     }
 });
