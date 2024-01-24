@@ -1,27 +1,36 @@
 let playerNum = 0;
-let carRival;
 
-const socket = new WebSocket("ws://192.168.1.35:8080");
+// Cars
+let player1;
+let player2;
+
+const socket = new WebSocket("ws://10.40.3.34:8080");
 
 socket.addEventListener('open', (event) => {
-
 });
 
 socket.addEventListener('message', (event) => {
-    console.log("[*] EVENT: Message from server - ", event.data);
     let data = JSON.parse(event.data);
 
+    // Si recibimos un campo llamado playerNum, asignaremos el valor a nuestra variable playerNum
     if (data.playerNum != undefined) {
         playerNum = data.playerNum;
-        console.log("[*] EVENT: Message from server - Player number " + playerNum);
     }
 
+    // Si recibidos datos con un campo x (con uno nos sirve) revisaremos qué usuario somos para poder mover al otro jugador con los datos recibidos ({x, y, r})
     else if (data.x != undefined) {
-        console.log(`[*] EVENT: Message from server - Car Rival data {${data.x}, ${data.y}, ${data.r}}`);
-        carRival = {
-            x: data.x,
-            y: data.y,
-            r: data.r
+        // En caso de ser el jugador 1, asignamos los valores recibidos al player2
+        if (playerNum === 1 && player2 != undefined) {
+            player2.x = data.x;
+            player2.y = data.y;
+            player2.rotation = data.r;
+        }
+
+        // En caso de ser el jugador 2, asignamos los valores recibidos al player1
+        if (playerNum === 2 && player1 != undefined) {
+            player1.x = data.x;
+            player1.y = data.y;
+            player1.rotation = data.r;
         }
     }
 });
@@ -40,10 +49,6 @@ const config = {
 // Car Speed (LINEAR AND ANGULAR)
 const CAR_SPEED = 5;
 const CAR_ROTATION = 3;
-
-// Cars
-let player1;
-let player2;
 
 // Car Angles
 let player1Angle = 0;
@@ -68,6 +73,11 @@ function create() {
 
 function update() {
 
+    // Si aún no nos hemos conectado al servidor, no movemos ningún coche
+    if (playerNum === 0) {
+        return;
+    }
+
     // El player 1 es el que actualmente puede realizar inputs para mover el coche
     if (playerNum === 1) {
         // Car 1 Input Update
@@ -77,13 +87,12 @@ function update() {
         }
 
         if (cursors.left.isDown) {
-            player1Angle -= CAR_ROTATION
-            player1.rotation = player1Angle * Math.PI / 180;
+            player1Angle -= CAR_ROTATION;
         }
         else if (cursors.right.isDown) {
-            player1Angle += CAR_ROTATION
+            player1Angle += CAR_ROTATION;
         }
-
+        
         player1.rotation = player1Angle * Math.PI / 180;
 
         let playerData = {
@@ -92,15 +101,31 @@ function update() {
             r: player1.rotation
         }
 
-        socket.send(JSON.stringify(playerData))
+        socket.send(JSON.stringify(playerData));
     }
 
-    // En caso de ser el player 2, deberemos actualizar el coche 1 mediante lo que nos llega del servidor
-    if (playerNum === 2) {
-        player1.x = carRival.x;
-        player1.y = carRival.y;
-        player1.rotation = carRival.r;
+    else if (playerNum === 2) {
+        // Car 1 Input Update
+        if (cursors.up.isDown) {
+            player2.y -= CAR_SPEED * Math.cos(player2Angle * Math.PI / 180);
+            player2.x += CAR_SPEED * Math.sin(player2Angle * Math.PI / 180);
+        }
+
+        if (cursors.left.isDown) {
+            player2Angle -= CAR_ROTATION;
+        }
+        else if (cursors.right.isDown) {
+            player2Angle += CAR_ROTATION;
+        }
+        
+        player2.rotation = player2Angle * Math.PI / 180;
+
+        let playerData = {
+            x: player2.x,
+            y: player2.y,
+            r: player2.rotation
+        }
+
+        socket.send(JSON.stringify(playerData));
     }
-
-
 }

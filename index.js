@@ -23,24 +23,29 @@ httpServer.listen(8080);
 
 // Configuramos las peticiones que deberemos escuchar mediante el servidor de Web Sockets
 wsServer.on('connection', (conn) => {
-    console.log("[*] EVENT: Connection");
 
     // Asignamos la nueva conexión a uno de los jugadores y les enviamos qué usuario son
+    // Les asignamos un evento de "mesage" a cada conexión donde, en caso que el otro jugador este conectado, le enviaremos el mensaje
     if (p1Conn === undefined) {
         p1Conn = conn;
         p1Conn.send('{"playerNum": 1}');
         p1Conn.on('message', (data) => {
-            if (p2Conn != undefined) {
-                p2Conn.send(data.toString());
-                console.log(data.toString());
+            if (p2Conn == undefined) {
+                return;
             }
+            p2Conn.send(data.toString());
+            console.log("[*] EVENT: Connection - Player 1");
         });
     }
     else if (p2Conn === undefined) {
         p2Conn = conn;
         p2Conn.send('{"playerNum": 2}');
         p2Conn.on('message', (data) => {
-            p1Conn.send(data);
+            if (p1Conn == undefined) {
+                return;
+            }
+            p1Conn.send(data.toString());
+            console.log("[*] EVENT: Connection - Player 2");
         });
     }
 });
