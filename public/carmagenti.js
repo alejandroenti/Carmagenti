@@ -57,6 +57,12 @@ const config = {
     type: Phaser.AUTO,
     width: 800,
     height: 600,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: true
+        }
+    },
     scene: {
         preload: preload,
         create: create,
@@ -105,6 +111,14 @@ function create() {
 
     cursors = this.input.keyboard.createCursorKeys();
     space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+    this.physics.add.collider(player1, player2);
+
+    this.physics.add.existing(player1, false);
+    this.physics.add.existing(player2, false);
+
+    this.physics.world.enable(player1);
+    this.physics.world.enable(player2);
 }
 
 function update() {
@@ -170,7 +184,7 @@ function update() {
 
         if (space.isDown && canShoot) {
             bullet = this.add.image(
-                player2.x + (2 * player2.width / 3)* Math.sin(player2Angle * Math.PI / 180),
+                player2.x + (2 * player2.width / 3) * Math.sin(player2Angle * Math.PI / 180),
                 player2.y - (2 * player2.width / 3) * Math.cos(player2Angle * Math.PI / 180),
                 "bullet-img"
             );
