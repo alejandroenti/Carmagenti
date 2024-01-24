@@ -4,6 +4,12 @@ let playerNum = 0;
 let player1;
 let player2;
 
+// Bullet
+let bullet;
+let rivalBullet;
+let canShoot = true;
+const BULLET_SPEED = 4;
+
 const socket = new WebSocket("ws://10.40.3.34:8080");
 
 socket.addEventListener('open', (event) => {
@@ -33,6 +39,18 @@ socket.addEventListener('message', (event) => {
             player1.rotation = data.r;
         }
     }
+
+    // Si recibidos datos con un campo bx, deberemos generar (si no está creada una bala y actualizar su posicón)
+    else if (data.bx != undefined) {
+        if (rivalBullet == undefined) {
+            rivalBullet = global_game.add.image(data.bx, data.by, "bullet-img");
+            rivalBullet.setScale(0.3);
+            rivalBullet.rotation = data.br;
+        }
+
+        rivalBullet.y -= BULLET_SPEED * Math.cos(rivalBullet.rotation);
+        rivalBullet.x += BULLET_SPEED * Math.sin(rivalBullet.rotation);
+    }
 });
 
 const config = {
@@ -47,8 +65,9 @@ const config = {
 };
 
 // Car Speed (LINEAR AND ANGULAR)
-const CAR_SPEED = 4;
-const CAR_ROTATION = 5;
+const CAR_SPEED = 3.5;
+const CAR_ROTATION = 4
+;
 
 // Car Angles
 let player1Angle = 0;
@@ -56,16 +75,22 @@ let player2Angle = 0;
 
 // Input Keys
 let cursors;
+let space;
 
 // Track background
 let bg;
 
 const game = new Phaser.Game(config);
 
+let global_game
+
 function preload() {
+    global_game = this
+
     this.load.image("bg-img", "assets/PNG/Tracks/track.png");
     this.load.image("car1-img", "assets/PNG/Cars/car_blue_small_1.png");
     this.load.image("car2-img", "assets/PNG/Cars/car_red_small_1.png");
+    this.load.image("bullet-img", "assets/PNG/Objects/bullet.png");
 }
 
 function create() {
@@ -79,6 +104,7 @@ function create() {
     player2.setScale(0.5);
 
     cursors = this.input.keyboard.createCursorKeys();
+    space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 }
 
 function update() {
@@ -102,9 +128,23 @@ function update() {
         else if (cursors.right.isDown) {
             player1Angle += CAR_ROTATION;
         }
+
+        // Al pulsar el espacio dispararemos una bala
+        // X + 2/3 ancho * sin(ángulo)
+        // Y - 2/3 ancho * cos(ángulo)
+        if (space.isDown && canShoot) {
+            bullet = this.add.image(
+                player1.x + (2 * player1.width / 3)* Math.sin(player1Angle * Math.PI / 180),
+                player1.y - (2 * player1.width / 3) * Math.cos(player1Angle * Math.PI / 180),
+                "bullet-img"
+            );
+            bullet.setScale(0.3);
+            bullet.rotation = player1Angle * Math.PI / 180;
+            canShoot = false;
+        }
         
         player1.rotation = player1Angle * Math.PI / 180;
-
+        
         let playerData = {
             x: player1.x,
             y: player1.y,
@@ -127,6 +167,17 @@ function update() {
         else if (cursors.right.isDown) {
             player2Angle += CAR_ROTATION;
         }
+
+        if (space.isDown && canShoot) {
+            bullet = this.add.image(
+                player2.x + (2 * player2.width / 3)* Math.sin(player2Angle * Math.PI / 180),
+                player2.y - (2 * player2.width / 3) * Math.cos(player2Angle * Math.PI / 180),
+                "bullet-img"
+            );
+            bullet.setScale(0.3);
+            bullet.rotation = player2Angle * Math.PI / 180;
+            canShoot = false;
+        }
         
         player2.rotation = player2Angle * Math.PI / 180;
 
@@ -138,4 +189,20 @@ function update() {
 
         socket.send(JSON.stringify(playerData));
     }
+
+    // Actualizamos la posición de la bala en caso de que exista o que no podamos disparar 
+    if (bullet == undefined || canShoot) {
+        return;
+    }
+
+    bullet.y -= BULLET_SPEED * Math.cos(bullet.rotation);
+    bullet.x += BULLET_SPEED * Math.sin(bullet.rotation);
+
+    let bulletData = {
+        bx: bullet.x,
+        by: bullet.y,
+        br: bullet.rotation
+    }
+
+    socket.send(JSON.stringify(bulletData));
 }
