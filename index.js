@@ -35,6 +35,13 @@ wsServer.on('connection', (conn) => {
                 return;
             }
             p2Conn.send(data.toString());
+
+            let parsedData = JSON.parse(data);
+            if (parsedData.collided != undefined && parsedData.collided === true) {
+                console.log("[*] Player 1 has died!");
+                p1Conn.send('{"gameOver": 1}');
+                p2Conn.send('{"gameOver": 1}');
+            }      
         });
     }
     else if (p2Conn === undefined) {
@@ -46,6 +53,13 @@ wsServer.on('connection', (conn) => {
                 return;
             }
             p1Conn.send(data.toString());
+
+            let parsedData = JSON.parse(data);
+            if (parsedData.collided != undefined && parsedData.collided === true) {
+                console.log("[*] Player 2 has died!");
+                p1Conn.send('{"gameOver": 2}');
+                p2Conn.send('{"gameOver": 2}');
+            }
         });
     }
 });

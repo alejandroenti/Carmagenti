@@ -10,6 +10,23 @@ let rivalBullet;
 let canShoot = true;
 const BULLET_SPEED = 4;
 
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: true
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
 const socket = new WebSocket("ws://10.40.3.34:8080");
 
 socket.addEventListener('open', (event) => {
@@ -78,24 +95,19 @@ socket.addEventListener('message', (event) => {
         rivalBullet.y -= BULLET_SPEED * Math.cos(rivalBullet.rotation);
         rivalBullet.x += BULLET_SPEED * Math.sin(rivalBullet.rotation);
     }
-});
 
-const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            debug: true
+    else if (data.gameOver != undefined) {
+
+        bg_endgame = global_game.add.rectangle(0, 0, config.width*2, config.height*2, 0x000000);
+
+        if (data.gameOver === playerNum) {
+            text = global_game.add.text(config.width / 3, config.height / 2, "YOU LOSE!", {font: '600 36px Arial', color: '#E21A1A'});
         }
-    },
-    scene: {
-        preload: preload,
-        create: create,
-        update: update
+        else {
+            text = global_game.add.text(config.width / 3, config.height / 2, "YOU WON!", {font: '600 36px Arial', color: '#29B72B'});
+        }
     }
-};
+});
 
 // Car Speed (LINEAR AND ANGULAR)
 const CAR_SPEED = 3.5;
@@ -111,6 +123,8 @@ let space;
 
 // Track background
 let bg;
+let bg_endgame;
+let text;
 
 const game = new Phaser.Game(config);
 
@@ -142,9 +156,6 @@ function create() {
 
     this.physics.add.existing(player1, false);
     this.physics.add.existing(player2, false);
-
-    this.physics.world.enable(player1);
-    this.physics.world.enable(player2);
 }
 
 function update() {
