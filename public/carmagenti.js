@@ -5,8 +5,8 @@ let player1;
 let player2;
 
 // Bullet
-let bullet;
-let rivalBullet;
+let bullet1;
+let bullet2;
 let canShoot = true;
 const BULLET_SPEED = 4;
 
@@ -44,57 +44,97 @@ socket.addEventListener('message', (event) => {
     // Si recibidos datos con un campo x (con uno nos sirve) revisaremos qué usuario somos para poder mover al otro jugador con los datos recibidos ({x, y, r})
     else if (data.x != undefined) {
         // En caso de ser el jugador 1, asignamos los valores recibidos al player2
-        if ((playerNum === 1 || playerNum > 2) && player2 != undefined) {
+        if (playerNum === 1&& player2 != undefined) {
             player2.x = data.x;
             player2.y = data.y;
             player2.rotation = data.r;
         }
 
         // En caso de ser el jugador 2, asignamos los valores recibidos al player1
-        if ((playerNum === 2 || player2 > 2) && player1 != undefined) {
+        if (playerNum === 2 && player1 != undefined) {
             player1.x = data.x;
             player1.y = data.y;
             player1.rotation = data.r;
+        }
+
+        if (playerNum > 2 && player1 != undefined && player2 != undefined) {
+            if (data.n === 1) {
+                player1.x = data.x;
+                player1.y = data.y;
+                player1.rotation = data.r;
+            }
+        
+            if (data.n === 2) {
+                player2.x = data.x;
+                player2.y = data.y;
+                player2.rotation = data.r;
+            }
         }
     }
 
     // Si recibidos datos con un campo bx, deberemos generar (si no está creada una bala y actualizar su posicón)
     else if (data.bx != undefined) {
-        if (rivalBullet === undefined) {
-            rivalBullet = global_game.add.image(data.bx, data.by, "bullet-img");
-            rivalBullet.setScale(0.3);
-            rivalBullet.rotation = data.br;
-
-            if (playerNum === 1) {
-                global_game.physics.add.collider(player1, rivalBullet, () => {
+        if (playerNum === 1) {
+            if (bullet2 === undefined) {
+                bullet2 = global_game.add.image(data.bx, data.by, "bullet-img");
+                bullet2.setScale(0.3);
+                bullet2.rotation = data.br;
+                global_game.physics.add.collider(player1, bullet2, () => {
                     console.log("Collided Player " + playerNum);
-                    rivalBullet.destroy(true, false);
+                    bullet2.destroy(true, false);
                     let collided = {
                         player: 1,
                         collided: true
                     };
                     socket.send(JSON.stringify(collided));
                 });
-                global_game.physics.add.existing(rivalBullet, false);
-                global_game.physics.world.enable(rivalBullet);
+                global_game.physics.add.existing(bullet2, false);
             }
-            else if (playerNum === 2) {
-                global_game.physics.add.collider(player2, rivalBullet, () => {
+            bullet2.y -= BULLET_SPEED * Math.cos(bullet2.rotation);
+            bullet2.x += BULLET_SPEED * Math.sin(bullet2.rotation);
+        }
+        
+        else if (playerNum === 2) {
+            if (bullet1 === undefined) {
+                bullet1 = global_game.add.image(data.bx, data.by, "bullet-img");
+                bullet1.setScale(0.3);
+                bullet1.rotation = data.br;
+                global_game.physics.add.collider(player2, bullet1, () => {
                     console.log("Collided Player " + playerNum);
-                    rivalBullet.destroy(true, false);
+                    bullet1.destroy(true, false);
                     let collided = {
                         player: 2,
                         collided: true
                     };
                     socket.send(JSON.stringify(collided));
                 });
-                global_game.physics.add.existing(rivalBullet, false);
-                global_game.physics.world.enable(rivalBullet);
-            }   
+                global_game.physics.add.existing(bullet1, false);
+            }
+            bullet1.y -= BULLET_SPEED * Math.cos(bullet1.rotation);
+            bullet1.x += BULLET_SPEED * Math.sin(bullet1.rotation);
         }
 
-        rivalBullet.y -= BULLET_SPEED * Math.cos(rivalBullet.rotation);
-        rivalBullet.x += BULLET_SPEED * Math.sin(rivalBullet.rotation);
+        else {
+            if (data.n === 1) {
+                if (bullet1 === undefined) {
+                    bullet1 = global_game.add.image(data.bx, data.by, "bullet-img");
+                    bullet1.setScale(0.3);
+                    bullet1.rotation = data.br;
+                }
+                bullet1.y -= BULLET_SPEED * Math.cos(bullet1.rotation);
+                bullet1.x += BULLET_SPEED * Math.sin(bullet1.rotation);
+            }
+
+            if (data.n === 2) {
+                if (bullet2 === undefined) {
+                    bullet2 = global_game.add.image(data.bx, data.by, "bullet-img");
+                    bullet2.setScale(0.3);
+                    bullet2.rotation = data.br;
+                }
+                bullet2.y -= BULLET_SPEED * Math.cos(bullet2.rotation);
+                bullet2.x += BULLET_SPEED * Math.sin(bullet2.rotation);
+            }
+        }
     }
 
     else if (data.gameOver != undefined) {
@@ -190,19 +230,20 @@ function update() {
         // X + 2/3 ancho * sin(ángulo)
         // Y - 2/3 ancho * cos(ángulo)
         if (space.isDown && canShoot) {
-            bullet = this.add.image(
+            bullet1 = this.add.image(
                 player1.x + (2 * player1.width / 3)* Math.sin(player1Angle * Math.PI / 180),
                 player1.y - (2 * player1.width / 3) * Math.cos(player1Angle * Math.PI / 180),
                 "bullet-img"
             );
-            bullet.setScale(0.3);
-            bullet.rotation = player1Angle * Math.PI / 180;
+            bullet1.setScale(0.3);
+            bullet1.rotation = player1Angle * Math.PI / 180;
             canShoot = false;
         }
         
         player1.rotation = player1Angle * Math.PI / 180;
         
         let playerData = {
+            n: 1,
             x: player1.x,
             y: player1.y,
             r: player1.rotation
@@ -210,14 +251,22 @@ function update() {
 
         socket.send(JSON.stringify(playerData));
 
-        /*// Calculamos si hemos chocado con la bala enemiga
-        if (rivalBullet === undefined) {
+        // Actualizamos la posición de la bala en caso de que exista o que no podamos disparar 
+        if (bullet1 === undefined || canShoot) {
             return;
         }
 
-        if (this.physics.collide(player1, rivalBullet)) {
-            console.log("Collided");
-        }*/
+        bullet1.y -= BULLET_SPEED * Math.cos(bullet1.rotation);
+        bullet1.x += BULLET_SPEED * Math.sin(bullet1.rotation);
+
+        let bulletData = {
+            n: 1,
+            bx: bullet1.x,
+            by: bullet1.y,
+            br: bullet1.rotation
+        }
+
+        socket.send(JSON.stringify(bulletData));
     }
 
     else if (playerNum === 2) {
@@ -235,19 +284,20 @@ function update() {
         }
 
         if (space.isDown && canShoot) {
-            bullet = this.add.image(
+            bullet2 = this.add.image(
                 player2.x + (2 * player2.width / 3) * Math.sin(player2Angle * Math.PI / 180),
                 player2.y - (2 * player2.width / 3) * Math.cos(player2Angle * Math.PI / 180),
                 "bullet-img"
             );
-            bullet.setScale(0.3);
-            bullet.rotation = player2Angle * Math.PI / 180;
+            bullet2.setScale(0.3);
+            bullet2.rotation = player2Angle * Math.PI / 180;
             canShoot = false;
         }
         
         player2.rotation = player2Angle * Math.PI / 180;
 
         let playerData = {
+            n: 2,
             x: player2.x,
             y: player2.y,
             r: player2.rotation
@@ -255,29 +305,21 @@ function update() {
 
         socket.send(JSON.stringify(playerData));
 
-        /*// Calculamos si hemos chocado con la bala enemiga
-        if (rivalBullet === undefined) {
+        // Actualizamos la posición de la bala en caso de que exista o que no podamos disparar 
+        if (bullet2 === undefined || canShoot) {
             return;
         }
 
-        if (this.physics.collide(player2, rivalBullet)) {
-            console.log("Collided");
-        }*/
+        bullet2.y -= BULLET_SPEED * Math.cos(bullet2.rotation);
+        bullet2.x += BULLET_SPEED * Math.sin(bullet2.rotation);
+
+        let bulletData = {
+            n: 2,
+            bx: bullet2.x,
+            by: bullet2.y,
+            br: bullet2.rotation
+        }
+
+        socket.send(JSON.stringify(bulletData));
     }
-
-    // Actualizamos la posición de la bala en caso de que exista o que no podamos disparar 
-    if (bullet == undefined || canShoot) {
-        return;
-    }
-
-    bullet.y -= BULLET_SPEED * Math.cos(bullet.rotation);
-    bullet.x += BULLET_SPEED * Math.sin(bullet.rotation);
-
-    let bulletData = {
-        bx: bullet.x,
-        by: bullet.y,
-        br: bullet.rotation
-    }
-
-    socket.send(JSON.stringify(bulletData));
 }
