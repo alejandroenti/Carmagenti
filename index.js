@@ -78,7 +78,6 @@ wsServer.on('connection', (conn) => {
     }
     else {
         let data = `{"playerNum": ${usersConnected}}`;
-        console.log(data);
         conn.send(data);
         console.log(`[*] EVENT: Connection - Viewer ${usersConnected - 2}`);
         usersConnected++;
