@@ -5,6 +5,8 @@ let ws = require('ws');
 // Conexión de los usuarios
 let p1Conn;
 let p2Conn;
+let viewers = [];
+let usersConnected = 3;
 
 // El servidor buscar recursos dentro de nuestra carpeta './public'
 let file = new static.Server('./public');
@@ -35,12 +37,18 @@ wsServer.on('connection', (conn) => {
                 return;
             }
             p2Conn.send(data.toString());
+            viewers.forEach(viewer => {
+                viewer.send(data.toString());
+            });
 
             let parsedData = JSON.parse(data);
             if (parsedData.collided != undefined && parsedData.collided === true) {
                 console.log("[*] Player 1 has died!");
                 p1Conn.send('{"gameOver": 1}');
                 p2Conn.send('{"gameOver": 1}');
+                viewers.forEach(viewer => {
+                    viewer.send('{"gameOver": 1}');
+                });
             }      
         });
     }
@@ -53,13 +61,27 @@ wsServer.on('connection', (conn) => {
                 return;
             }
             p1Conn.send(data.toString());
+            viewers.forEach(viewer => {
+                viewer.send(data.toString());
+            });
 
             let parsedData = JSON.parse(data);
             if (parsedData.collided != undefined && parsedData.collided === true) {
                 console.log("[*] Player 2 has died!");
                 p1Conn.send('{"gameOver": 2}');
                 p2Conn.send('{"gameOver": 2}');
-            }
+                viewers.forEach(viewer => {
+                    viewer.send('{"gameOver": 2}');
+                });
+            }  
         });
+    }
+    else {
+        let data = `{"playerNum": ${usersConnected}}`;
+        console.log(data);
+        conn.send(data);
+        console.log(`[*] EVENT: Connection - Viewer ${usersConnected - 2}`);
+        usersConnected++;
+        viewers.push(conn);
     }
 });
