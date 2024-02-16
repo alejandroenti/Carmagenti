@@ -15,10 +15,7 @@ const config = {
     width: 800,
     height: 600,
     physics: {
-        default: 'arcade',
-        arcade: {
-            debug: true
-        }
+        default: 'arcade'
     },
     scene: {
         preload: preload,
