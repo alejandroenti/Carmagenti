@@ -42,10 +42,37 @@ socket.addEventListener('message', (event) => {
 
     // Si recibidos datos con un campo bx, deberemos generar (si no está creada una bala y actualizar su posicón)
     else if (data.bx != undefined) {
-        if (rivalBullet == undefined) {
+        if (rivalBullet === undefined) {
             rivalBullet = global_game.add.image(data.bx, data.by, "bullet-img");
             rivalBullet.setScale(0.3);
             rivalBullet.rotation = data.br;
+
+            if (playerNum === 1) {
+                global_game.physics.add.collider(player1, rivalBullet, () => {
+                    console.log("Collided Player " + playerNum);
+                    rivalBullet.destroy(true, false);
+                    let collided = {
+                        player: 1,
+                        collided: true
+                    };
+                    socket.send(JSON.stringify(collided));
+                });
+                global_game.physics.add.existing(rivalBullet, false);
+                global_game.physics.world.enable(rivalBullet);
+            }
+            else if (playerNum === 2) {
+                global_game.physics.add.collider(player2, rivalBullet, () => {
+                    console.log("Collided Player " + playerNum);
+                    rivalBullet.destroy(true, false);
+                    let collided = {
+                        player: 2,
+                        collided: true
+                    };
+                    socket.send(JSON.stringify(collided));
+                });
+                global_game.physics.add.existing(rivalBullet, false);
+                global_game.physics.world.enable(rivalBullet);
+            }   
         }
 
         rivalBullet.y -= BULLET_SPEED * Math.cos(rivalBullet.rotation);
@@ -72,8 +99,7 @@ const config = {
 
 // Car Speed (LINEAR AND ANGULAR)
 const CAR_SPEED = 3.5;
-const CAR_ROTATION = 4
-;
+const CAR_ROTATION = 4;
 
 // Car Angles
 let player1Angle = 0;
@@ -166,6 +192,15 @@ function update() {
         }
 
         socket.send(JSON.stringify(playerData));
+
+        /*// Calculamos si hemos chocado con la bala enemiga
+        if (rivalBullet === undefined) {
+            return;
+        }
+
+        if (this.physics.collide(player1, rivalBullet)) {
+            console.log("Collided");
+        }*/
     }
 
     else if (playerNum === 2) {
@@ -202,6 +237,15 @@ function update() {
         }
 
         socket.send(JSON.stringify(playerData));
+
+        /*// Calculamos si hemos chocado con la bala enemiga
+        if (rivalBullet === undefined) {
+            return;
+        }
+
+        if (this.physics.collide(player2, rivalBullet)) {
+            console.log("Collided");
+        }*/
     }
 
     // Actualizamos la posición de la bala en caso de que exista o que no podamos disparar 
