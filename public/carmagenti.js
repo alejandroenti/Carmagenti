@@ -38,19 +38,20 @@ socket.addEventListener('message', (event) => {
     // Si recibimos un campo llamado playerNum, asignaremos el valor a nuestra variable playerNum
     if (data.playerNum != undefined) {
         playerNum = data.playerNum;
+        console.log(`Player Number: ${playerNum}`);
     }
 
     // Si recibidos datos con un campo x (con uno nos sirve) revisaremos qué usuario somos para poder mover al otro jugador con los datos recibidos ({x, y, r})
     else if (data.x != undefined) {
         // En caso de ser el jugador 1, asignamos los valores recibidos al player2
-        if (playerNum === 1 && playerNum > 2 && player2 != undefined) {
+        if ((playerNum === 1 || playerNum > 2) && player2 != undefined) {
             player2.x = data.x;
             player2.y = data.y;
             player2.rotation = data.r;
         }
 
         // En caso de ser el jugador 2, asignamos los valores recibidos al player1
-        if (playerNum >= 2 && player1 != undefined) {
+        if ((playerNum === 2 || player2 > 2) && player1 != undefined) {
             player1.x = data.x;
             player1.y = data.y;
             player1.rotation = data.r;
@@ -107,7 +108,9 @@ socket.addEventListener('message', (event) => {
             text = global_game.add.text(config.width / 3, config.height / 2, "YOU WON!", {font: '600 36px Arial', color: '#29B72B'});
         }
         else {
-            text = global_game.add.text(config.width / 3, config.height / 2, "Player " + data.gameOver + " WON", {font: '600 36px Arial', color: '#FFFFFF'});
+            let number;
+            data.gameOver === 1 ? number = 2 : number = 1;
+            text = global_game.add.text(config.width / 3, config.height / 2, "Player " + number + " WON", {font: '600 36px Arial', color: '#FFFFFF'});
         }
     }
 });
